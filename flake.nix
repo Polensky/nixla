@@ -40,11 +40,18 @@
 
             nativeBuildInputs = with pkgs; [
               cmake
+							pkg-config
             ];
 
-            configurePhase = ''
-              cmake -B build
-            '';
+            configurePhase = if pkgs.stdenv.isDarwin then ''
+              cmake -B build \
+								-DOPENSSL_ROOT_DIR=${pkgs.openssl.dev} \
+								-DOPENSSL_CRYPTO_LIBRARY=${pkgs.openssl.out}/lib/libcrypto.dylib \
+								-DOPENSSL_SSL_LIBRARY=${pkgs.openssl.out}/lib/libssl.dylib \
+								-DOPENSSL_INCLUDE_DIR=${pkgs.openssl.dev}/include
+            '' else ''
+							cmake -B build
+						'';
 
             buildPhase = ''
               cmake --build build --parallel $NIX_BUILD_CORES
